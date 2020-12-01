@@ -3,13 +3,15 @@
 #include <armadillo>
 #include <SDL_image.h>
 #include <myo/myo.hpp>
+#include <SDL_ttf.h>
 #include "MyoController.h"
 
 class RehabilitationGame
 {
 public:
 	MyoController collector;
-	bool  startGame = false;
+	bool startGame = false;
+	int NumberOfPoints = 1;
 	struct GameObject {
 		std::string name;
 		SDL_Texture* Sprite;
@@ -22,29 +24,30 @@ public:
 		int ydir = 0;
 	};
 
-	void init(const char* title, int posx, int posy, int width, int height, MyoController &collector);
+	void init(const char* title, int posx, int posy, int width, int height, MyoController& collector);
 	void update(MyoController& collector);
 	void render();
-	void initGameObject(GameObject& gameObject,int x, int y, int width, int height, const char* spriteLocation, std::string name);
+	void initGameObject(GameObject& gameObject, int x, int y, int width, int height, const char* spriteLocation, std::string name);
 	void UpdateGameObject(GameObject& gameObject);
 	void RenderGameObject(GameObject& gameObject);
 	void clean();
 	SDL_Renderer* renderer;
 
-	
+	struct Button {
+		int x;
+		int y;
+		int w = 10;
+		int h = 10;
+	};
+
+
+
+	void GameSettings();
 private:
-	int buttonw = 100;
-	int buttonh = 30;
-	int mousecoordinatex;
-	int mousecoordinatey;
-	int buttonplacemetx = 120;
-	int buttonplacementy = 120;
 	//bool  startGame = false;
 	bool  gameIsInitialized = false;
-    SDL_Window* window;
-	
+	SDL_Window* window;
 	SDL_Texture* background;
 
 
 };
-

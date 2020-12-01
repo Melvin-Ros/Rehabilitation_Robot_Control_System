@@ -1,99 +1,177 @@
 #include "CrustCrawlerDynamics.h"
-
-void CrustCrawlerDynamics::errortheta(float theta[4], float thetaref[4])
+SimpleSerial serial("COM6", 115200);
+void CrustCrawlerDynamics::errortheta()
 {
+    for (int i = 0; i < 4; i++)
+    {
+        err[i] = Thetaref[i] - angle[i];
 
-	for (int i = 0; i < 4; i++)
-	{
-		err[i] = thetaref[i] - theta[i];
-	}
+    }
+}
+
+void CrustCrawlerDynamics::errordtheta()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        derr[i] = dThetaref[i] - anglevelocity[i];
+    }
+}
+
+void CrustCrawlerDynamics::UpdatePos()
+{
+    
+    bool messageReceived = false;
+    bool messageDone = false;
+    bool start = false;
+    std::string message;
+    message = serial.readLine();
+    std::string number;
+    std::string vnumber;
+    if (message != "") {
+        for (int i = 0; i < message.length(); i++)
+        {
+            if (message[i] == 'A') {
+                std::string temp = "";
+                temp += message[i + 1];
+
+                for (int j = i + 2; j < message.length(); j++)
+                {
+                    if (message[j] == 'A' || message[j] == 'V') {
+                        j = message.length();
+                        angle[stoi(temp)] = stoi(number);
+
+                        number = "";
+                    }
+                    else if ((message[j] >= '0' && message[j] <= '9') || message[j] == '-') {
+
+                        number += message[j];
+                    }
+                }
+            }
+            if (message[i] == 'V') {
+                std::string temp = "";
+                temp += message[i + 1];
+
+                for (int j = i + 2; j < message.length(); j++)
+                {
+                    if (message[j] == 'A' || message[j] == 'V' || message[j] == 'M') {
+                        j = message.length();
+                        anglevelocity[stoi(temp)] = stoi(number);
+                        number = "";
+                    }
+                    else if ((message[j] >= '0' && message[j] <= '9') || message[j] == '-') {
+
+                        number += message[j];
+                    }
+                }
+            }
+        }
+
+    }
+
 
 }
 
-void CrustCrawlerDynamics::errordtheta(float dtheta[4], float dthetaref[4])
+void CrustCrawlerDynamics::updateref(Angles theta)
 {
-	for (int i = 0; i < 4; i++)
-	{
-		derr[i] = dthetaref[i] - dtheta[i];
-	}
+    Thetaref[0] = theta.theta1;
+    dThetaref[0] = 0;
+    ddThetaref[0] = 0;
+
+    Thetaref[1] = theta.theta2;
+    dThetaref[1] = 0;
+    ddThetaref[1] = 0;
+
+    Thetaref[2] = theta.theta3;
+    dThetaref[2] = 0;
+    ddThetaref[2] = 0;
+
+    Thetaref[3] = theta.theta4;
+    dThetaref[3] = 0;
+    ddThetaref[3] = 0;
 }
 
-void CrustCrawlerDynamics::getangle()
+void CrustCrawlerDynamics::updatem()
 {
-	// serial communication stuff
-	angle[0] = Dynamixel.getPositionD(MOTOR1_ID);
-	angle[1] = Dynamixel.getPositionD(MOTOR2_ID);
-	angle[2] = Dynamixel.getPositionD(MOTOR3_ID);
-	angle[3] = Dynamixel.getPositionD(MOTOR4_ID);
+    m[0] = (0.0027 * cos(angle[2] + angle[3] - 0.3717) - 0.0027 * cos(2.0 * angle[1] + angle[2] + angle[3] - 0.3717) - 0.0116 * cos(2.0 * angle[1] - 0.0049) - 0.0026 * cos(2.0 * angle[1] + 2.0 * angle[2] - 0.0083) - 0.0005 * cos(2.0 * angle[1] + 2.0 * angle[2] + 2.0 * angle[3] - 0.7434) + 0.0018 * cos(angle[3] - 0.3717) + 0.0083 * cos(angle[2] - 0.0072) - 0.0018 * cos(2.0 * angle[1] + 2.0 * angle[2] + angle[3] - 0.3717) - 0.0083 * cos(2.0 * angle[1] + angle[2] - 0.0072) + 0.0150);
+    m[1] = (0.0053 * cos(angle[2] + angle[3] - 0.3717) + 0.0036 * cos(angle[3] - 0.3717) + 0.0165 * cos(angle[2] - 0.0072) + 0.0273);
+    m[2] = (0.0036 * cos(angle[3] - 0.3717) + 0.0062);
+    m[3] = (0.0010);
 }
 
-void CrustCrawlerDynamics::getanglevelocity()
+void CrustCrawlerDynamics::updateg()
 {
-	// serial communication stuff
-	anglevelocity[0] = Dynamixel.getVelocity(MOTOR1_ID);
-	anglevelocity[1] = Dynamixel.getVelocity(MOTOR2_ID);
-	anglevelocity[2] = Dynamixel.getVelocity(MOTOR3_ID);
-	anglevelocity[3] = Dynamixel.getVelocity(MOTOR4_ID);
-}
-
-void CrustCrawlerDynamics::updateref()
-{
-	//updates the reference theta, dtheta and ddtheta if there is an update
-	for (int i = 0; i < 4; i++) {
-		Thetaref[i] = 180;
-		dThetaref[i] = 0;
-		ddThetaref[i] = 0;
-	}
-}
-
-void CrustCrawlerDynamics::updatem(float theta[4])
-{
-	
-	m[0] = (0.0027 * cos(theta[2] + theta[3] - 0.3717) - 0.0027 * cos(2.0 * theta[1] + theta[2] + theta[3] - 0.3717) - 0.0116 * cos(2.0 * theta[1] - 0.0049) - 0.0026 * cos(2.0 * theta[1] + 2.0 * theta[2] - 0.0083) - 0.0005 * cos(2.0 * theta[1] + 2.0 * theta[2] + 2.0 * theta[3] - 0.7434) + 0.0018 * cos(theta[3] - 0.3717) + 0.0083 * cos(theta[2] - 0.0072) - 0.0018 * cos(2.0 * theta[1] + 2.0 * theta[2] + theta[3] - 0.3717) - 0.0083 * cos(2.0 * theta[1] + theta[2] - 0.0072) + 0.0150);
-	m[1] = (0.0053 * cos(theta[2] + theta[3] - 0.3717) + 0.0036 * cos(theta[3] - 0.3717) + 0.0165 * cos(theta[2] - 0.0072) + 0.0273);
-	m[2] = (0.0036 * cos(theta[3] - 0.3717) + 0.0062);
-	m[3] = (0.0010);
-}
-
-void CrustCrawlerDynamics::updateg(float theta[4])
-{
-	g[0] = 0;
-	g[1] = 0.3683 * cos(theta[1] + theta[2] + 1.5636) + 0.1190 * cos(theta[1] + theta[2] + theta[3] + 0.1991) + 1.0545 * cos(theta[1] + 1.5686);
-	g[2] = 0.3683 * cos(theta[1] + theta[2] + 1.5636) + 0.1190 * cos(theta[1] + theta[2] + theta[3] + 0.1991);
-	g[3] = 0.1190 * cos(theta[1] + theta[2] + theta[3] + 0.1991);
+    g[0] = 0;
+    g[1] = (0.3683 * cos(angle[1] + angle[2] + 1.5636) + 0.1190 * cos(angle[1] + angle[2] + angle[3] + 0.1991) + 1.0545 * cos(angle[1] + 1.5686));
+    g[2] = (0.3683 * cos(angle[1] + angle[2] + 1.5636) + 0.1190 * cos(angle[1] + angle[2] + angle[3] + 0.1991));
+    g[3] = (0.1190 * cos(angle[1] + angle[2] + angle[3] + 0.1991));
 
 }
 
-void CrustCrawlerDynamics::send_torque(float torque[4])
+void CrustCrawlerDynamics::send_torque()
 {
-	for (int i = 0; i < 4; i++) {
-	Serial.println(angle[2]);
-	PWM[2] = Converter.dynaPower(torque[0], anglevelocity[0], torque[1], anglevelocity[1], torque[2], anglevelocity[2], torque[3], anglevelocity[3]).returnPWM[2];
-	}
+    PWM[0] = 191 * torque[0] + 124 * dThetaref[0];
+    PWM[1] = 107 * torque[1] + 166 * dThetaref[1];
+    PWM[2] = 191 * torque[2] + 124 * dThetaref[2];
+    PWM[3] = 191 * torque[3] + 146 * dThetaref[3];
+    int pwm[4];
+    pwm[0] = PWM[0];
+    pwm[1] = PWM[1];
+    pwm[2] = PWM[2];
+    pwm[3] = PWM[3];
 
-	Dynamixel.setGoalPWM(MOTOR1_ID, PWM[0]);
-	Dynamixel.setGoalPWM(MOTOR2_ID, PWM[1]);
-    Dynamixel.setGoalPWM(MOTOR3_ID, PWM[2]);
-	Dynamixel.setGoalPWM(MOTOR4_ID, PWM[3]);
+    std::string message;
+
+    message = "P";
+    message += std::to_string(0);
+    message += std::to_string(pwm[0]);
+    message += ':';
+
+    message += "P";
+    message += std::to_string(1);
+    message += std::to_string(pwm[1]);
+    message += ':';
+    message += "P";
+    message += std::to_string(2);
+    message += std::to_string(pwm[2]);
+    message += ':';
+
+    message += "P";
+    message += std::to_string(3);
+    message += std::to_string(pwm[3]);
+    message += ':';
+
+
+    std::cout << message << std::endl;
+    serial.writeString(message);
+
 }
 
-void CrustCrawlerDynamics::control()
+void CrustCrawlerDynamics::control(Angles theta)
 {
-	updateref();
-	getangle();
-	getanglevelocity();
-	errortheta(angle, Thetaref);
-	errordtheta(anglevelocity, dThetaref);
+    
+    updateref(theta);
+    UpdatePos();
+    for (int i = 0; i < 4; i++) {
+        // std::cout << i << " " << angle[i] << " ";
+        anglevelocity[i] *= 3.14 / 180;
+        angle[i] *= 3.14 / 180;
+        Thetaref[i] *= 3.14 / 180;
+    }
+    angle[1] -= 3.14;
+    angle[2] -= 3.14;
+    angle[3] -= 3.14;
+   
+    std::cout << std::endl;
+    errortheta();
+    errordtheta();
+    updatem();
+    updateg();
+    for (int i = 0; i < 4; i++) {
+        torque[i] = m[i] * ((kp[i] * err[i]) + (kd[i] * derr[i])) + g[i];
 
-	updatem(angle);
-	updateg(angle);
-	float torque[4];
+    }
+    std::cout << std::endl;
 
-	 for (int i = 0; i < 4; i++)
-	 {
-	torque[2] = m[2] * (ddThetaref[2] + (kp[2] * err[2]) + (kd[2] * derr[2])) + g[2];
-	 }
-
-	send_torque(torque);
-
+    send_torque();
 }

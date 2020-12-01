@@ -7,9 +7,9 @@
 class Rehabilitation_GUI
 {
 public:
-	void Update(myo::Hub& hub, MyoController& collector);
-	void Settings();
-	void MainMenu(myo::Hub &hub, MyoController& collector);
+	void Update();
+	//void Settings();
+	void MainMenu();
 	void Clean();
 private:
 	//variables to use for the robot
@@ -18,7 +18,6 @@ private:
 	bool quit = false;
 	int mousecoordinatex;
 	int mousecoordinatey;
-	int settingsplacementx = 530;
 	int startplacementx = 400;
 	int quitplacementx = 660;
 	int buttonplacementy = 120;
@@ -27,4 +26,3 @@ private:
 	bool continue_func = false;
 
 };
-

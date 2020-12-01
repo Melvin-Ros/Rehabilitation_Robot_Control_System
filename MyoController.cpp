@@ -76,7 +76,7 @@ void MyoController::onEmgData(myo::Myo* myo, uint64_t timestamp, const int8_t* e
 
 void MyoController::onLock(myo::Myo* myo, uint64_t timestamp)
 {
-    
+
     isUnlocked = false;
 }
 

@@ -33,6 +33,13 @@ public:
      * \return a string containing the received line
      * \throws  system::system_error on failure
      */
+    char readChar() {
+        using namespace boost;
+        char c;
+        asio::read(serial, asio::buffer(&c, 1));
+        return c;
+
+    }
     std::string readLine()
     {
         //Reading data char by char, code is optimized for simplicity, not speed

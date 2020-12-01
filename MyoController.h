@@ -51,4 +51,3 @@ public:
     // These values are set by onPose() above.
     myo::Pose currentPose;
 };
-
