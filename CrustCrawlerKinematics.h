@@ -3,37 +3,37 @@
 class CrustCrawlerKinematics
 {
 public:
-	double ShoulderDistanceFromBase = 400;
-	double ShoulderHeightFromBase = 100;
+	float ShoulderDistanceFromBase = 400;
+	float ShoulderHeightFromBase = 100;
 	struct Angles {
-		double theta1;
-		double theta2;
-		double theta3;
-		double theta4;
+		float theta1;
+		float theta2;
+		float theta3;
+		float theta4;
 	};
 	struct Pos {
-		double x, y, z;
+		float x, y, z;
 	};
 	struct CurrentAngles {
-		double theta0_1;
-		double theta0_2;
-		double theta0_3;
-		double theta0_4;
+		float theta0_1;
+		float theta0_2;
+		float theta0_3;
+		float theta0_4;
 	};
 	struct CurrentVelocity {
-		double dtheta1;
-		double dtheta2;
-		double dtheta3;
-		double dtheta4;
+		float dtheta1;
+		float dtheta2;
+		float dtheta3;
+		float dtheta4;
 	};
 	arma::Mat<double> TargetMatrix = arma::zeros(4, 4);
-	Pos  ForwardKinematics(double t1, double t2, double t3, double t4);
-	Angles InverseKinematics(double x, double y, double z);
-	//arma::Mat<double> TrajectoryGeneration(Angles goalAngles, CurrentAngles currentAngles, CurrentVelocity currentVelocity);
+	Pos  ForwardKinematics(float t1,float t2,float t3,float t4);
+	Angles InverseKinematics(float x,float y,float z);
+	arma::Mat<double> TrajectoryGeneration(Angles goalAngles, CurrentAngles currentAngles, CurrentVelocity currentVelocity);
 
 
 protected:
-	double PI = arma::datum::pi;
+	float PI = arma::datum::pi;
 private:
 
 

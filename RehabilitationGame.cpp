@@ -12,9 +12,9 @@ RehabilitationGame::GameObject player;
 CrustCrawlerKinematics CCK;
 CrustCrawlerDynamics Dynamics;
 CrustCrawlerKinematics::Angles TargetAngles;
-double currentPosX = 0;
-double currentPosY = 147;
-double currentPosZ = 210;
+float currentPosX = 0;
+float currentPosY = 147;
+float currentPosZ = 210;
 SDL_Event event;
 //SimpleSerial serial("COM5", 115);
 int counter = 0;
@@ -28,12 +28,7 @@ void RehabilitationGame::init(const char* title, int posx, int posy, int width, 
 	currentPosZ = tempPos.z;
 	currentPosY = tempPos.y;
 	TargetAngles = CCK.InverseKinematics(currentPosX, currentPosY, currentPosZ);
-	CrustCrawlerDynamics::Angles theta;
-	theta.theta1 = TargetAngles.theta1;
-	theta.theta2 = TargetAngles.theta2;
-	theta.theta3 = TargetAngles.theta3;
-	theta.theta4 = TargetAngles.theta4;
-	Dynamics.control(theta);
+	
 	/*
 	std::string message = "1 " + std::to_string(int(TargetAngles.theta1)) + ":" +
 		"2 " + std::to_string(int(TargetAngles.theta2)) + ":" +
@@ -59,12 +54,11 @@ void RehabilitationGame::init(const char* title, int posx, int posy, int width, 
 	}
 	std::cout << asteroids.size() << std::endl;
 	startGame = true;
-	SDL_Delay(3000);
+	SDL_Delay(1000);
 }
 
 void RehabilitationGame::update(MyoController& collector)
 {
-	counter++;
 
 	if (startGame) {
 
@@ -81,26 +75,21 @@ void RehabilitationGame::update(MyoController& collector)
 
 		}
 		else {
-			// In each iteration of our main loop, we run the Myo event loop for a set number of milliseconds.
-		// In this case, we wish to update our display 20 times a second, so we run for 1000/20 milliseconds.
-
-
-
 
 			for (int i = 0; i < asteroids.size(); i++) {
 				UpdateGameObject(asteroids[i]);
 				srand(time(NULL) + i);
 				if ((player.DestR.x - asteroids[i].DestR.x) * (player.DestR.x - asteroids[i].DestR.x) + (player.DestR.y - asteroids[i].DestR.y) * (player.DestR.y - asteroids[i].DestR.y) < 50 * 50) {
 					asteroids[i].DestR.x = rand() % 450 + 150;
-					SDL_Delay(300);
+					SDL_Delay(100);
 					asteroids[i].DestR.y = rand() % 450 + 150, 50, 50;
 				}
 			}
 
 			if (collector.Direction == MyoController::Left) {
-				player.xdir = -5;
+				player.xdir = -1;
 				player.ydir = 0;
-				double targetX, targetY, targetZ;
+				float targetX, targetY, targetZ;
 				targetX = currentPosX + player.xdir;
 				targetY = currentPosY;
 				targetZ = currentPosZ + player.ydir;
@@ -115,9 +104,9 @@ void RehabilitationGame::update(MyoController& collector)
 
 			}
 			else if (collector.Direction == MyoController::Right) {
-				player.xdir = 5;
+				player.xdir = 1;
 				player.ydir = 0;
-				double targetX, targetY, targetZ;
+				float targetX, targetY, targetZ;
 				targetX = currentPosX + player.xdir;
 				targetY = currentPosY;
 				targetZ = currentPosZ + player.ydir;
@@ -129,8 +118,8 @@ void RehabilitationGame::update(MyoController& collector)
 			}
 			else if (collector.Direction == MyoController::Down) {
 				player.xdir = 0;
-				player.ydir = 5;
-				double targetX, targetY, targetZ;
+				player.ydir = 1;
+				float targetX, targetY, targetZ;
 				targetX = currentPosX + player.xdir;
 				targetY = currentPosY;
 				targetZ = currentPosZ + player.ydir;
@@ -142,16 +131,14 @@ void RehabilitationGame::update(MyoController& collector)
 			}
 			else if (collector.Direction == MyoController::Up) {
 				player.xdir = 0;
-				player.ydir = -5;
-				double targetX, targetY, targetZ;
+				player.ydir = -1;
+				float targetX, targetY, targetZ;
 				targetX = currentPosX + player.xdir;
 				targetY = currentPosY;
 				targetZ = currentPosZ + player.ydir;
 				//if (targetX * targetX + targetY * targetY + targetZ * targetZ <= 360 * 360) {
 				currentPosX -= player.xdir;
 				currentPosZ -= player.ydir;
-				//}
-
 
 			}
 			else {
@@ -164,21 +151,8 @@ void RehabilitationGame::update(MyoController& collector)
 			theta.theta2 = TargetAngles.theta2;
 			theta.theta3 = TargetAngles.theta3;
 			theta.theta4 = TargetAngles.theta4;
-
-			Dynamics.control(theta);
-			counter = 0;
-				
 			
-
-
-
-
-
-
-
-
-
-
+			Dynamics.control(theta);
 			UpdateGameObject(player);
 		}
 
@@ -346,6 +320,7 @@ void RehabilitationGame::GameSettings()
 			Text = TTF_RenderText_Solid(TextFont, "2", black);
 			Texture = SDL_CreateTextureFromSurface(settingsrenderer, Text);
 			SDL_RenderCopy(settingsrenderer, Texture, NULL, &PointText[i]);
+			NumberOfPoints = 2;
 			break;
 
 		case 1:
@@ -360,6 +335,7 @@ void RehabilitationGame::GameSettings()
 			Text = TTF_RenderText_Solid(TextFont, "4", black);
 			Texture = SDL_CreateTextureFromSurface(settingsrenderer, Text);
 			SDL_RenderCopy(settingsrenderer, Texture, NULL, &PointText[i]);
+			NumberOfPoints = 4;
 			break;
 
 		case 2:
@@ -374,6 +350,7 @@ void RehabilitationGame::GameSettings()
 			Text = TTF_RenderText_Solid(TextFont, "6", black);
 			Texture = SDL_CreateTextureFromSurface(settingsrenderer, Text);
 			SDL_RenderCopy(settingsrenderer, Texture, NULL, &PointText[i]);
+			NumberOfPoints = 6;
 			break;
 		default:
 			break;

@@ -14,13 +14,13 @@ public:
 	float angle[4];
 	float err[4];
 	float derr[4];
-	double PWM[4];
+	float PWM[4];
 	float torque[4];
 	struct Angles {
-		double theta1;
-		double theta2;
-		double theta3;
-		double theta4;
+		float theta1;
+		float theta2;
+		float theta3;
+		float theta4;
 	};
 	//SimpleSerial serial("COM6", 115200);
 	void errortheta();
