@@ -14,22 +14,16 @@ public:
 	struct Pos {
 		float x, y, z;
 	};
-	struct CurrentAngles {
-		float theta0_1;
-		float theta0_2;
-		float theta0_3;
-		float theta0_4;
-	};
-	struct CurrentVelocity {
-		float dtheta1;
-		float dtheta2;
-		float dtheta3;
-		float dtheta4;
+	struct Trajectory
+	{
+		float theta[4];
+		float dtheta[4];
+		float ddtheta[4];
 	};
 	arma::Mat<double> TargetMatrix = arma::zeros(4, 4);
 	Pos  ForwardKinematics(float t1,float t2,float t3,float t4);
 	Angles InverseKinematics(float x,float y,float z);
-	arma::Mat<double> TrajectoryGeneration(Angles goalAngles, CurrentAngles currentAngles, CurrentVelocity currentVelocity);
+	Trajectory TrajectoryGeneration(float goalAngles[4], float currentAngles[4], float currentVelocity[4]);
 
 
 protected:

@@ -12,9 +12,13 @@ RehabilitationGame::GameObject player;
 CrustCrawlerKinematics CCK;
 CrustCrawlerDynamics Dynamics;
 CrustCrawlerKinematics::Angles TargetAngles;
+int Scalar = 5;
 float currentPosX = 0;
 float currentPosY = 147;
 float currentPosZ = 210;
+float theta[4];
+float dtheta[4];
+float ddtheta[4];
 SDL_Event event;
 //SimpleSerial serial("COM5", 115);
 int counter = 0;
@@ -28,6 +32,31 @@ void RehabilitationGame::init(const char* title, int posx, int posy, int width, 
 	currentPosZ = tempPos.z;
 	currentPosY = tempPos.y;
 	TargetAngles = CCK.InverseKinematics(currentPosX, currentPosY, currentPosZ);
+	while (Dynamics.anglevelocity[3] >= 0.5) {
+		
+		theta[0] = TargetAngles.theta1 * 3.14 / 180;
+		theta[1] = TargetAngles.theta2 * 3.14 / 180;
+		theta[2] = TargetAngles.theta3 * 3.14 / 180;
+		theta[3] = TargetAngles.theta4 * 3.14 / 180;
+		std::cout << "theta 3 before" << theta[2] << " ";
+		CrustCrawlerKinematics::Trajectory trajectory = CCK.TrajectoryGeneration(theta, Dynamics.angle, Dynamics.anglevelocity);
+		
+		theta[0] = trajectory.theta[0];
+		theta[1] = trajectory.theta[1] ;
+		theta[2] = trajectory.theta[2] ;
+		theta[3] = trajectory.theta[3] ;
+		std:: cout << "theta 3 after" << theta[2] << " " << std::endl;
+		dtheta[0] = trajectory.dtheta[0];
+		dtheta[1] = trajectory.dtheta[1];
+		dtheta[2] = trajectory.dtheta[2];
+		dtheta[3] = trajectory.dtheta[3];
+		
+		ddtheta[0] = trajectory.ddtheta[0];
+		ddtheta[1] = trajectory.ddtheta[1];
+		ddtheta[2] = trajectory.ddtheta[2];
+		ddtheta[3] = trajectory.ddtheta[3];
+		Dynamics.control(theta, dtheta, ddtheta);
+	}
 	
 	/*
 	std::string message = "1 " + std::to_string(int(TargetAngles.theta1)) + ":" +
@@ -47,14 +76,15 @@ void RehabilitationGame::init(const char* title, int posx, int posy, int width, 
 
 	background = SDL_CreateTextureFromSurface(renderer, temp);
 
-	for (int i = 0; i < NumberOfPoints; i++)
+	for (int i = 0; i <= NumberOfPoints; i++)
 	{
 		GameObject asteroid;
 		asteroids.push_back(asteroid);
 	}
 	std::cout << asteroids.size() << std::endl;
+	
 	startGame = true;
-	SDL_Delay(1000);
+	SDL_Delay(100);
 }
 
 void RehabilitationGame::update(MyoController& collector)
@@ -63,82 +93,79 @@ void RehabilitationGame::update(MyoController& collector)
 	if (startGame) {
 
 		if (!gameIsInitialized) {
-			initGameObject(player, 400, 300, 50, 50, "Boat.png", "Player");
-			for (int i = 0; i < asteroids.size(); i++)
-			{
-				srand(time(NULL) + i * i);
-				initGameObject(asteroids[i], rand() % 450 + 150, rand() % 450 + 150, 50, 50, "Ice.png", "Asteroid");
-				SDL_Delay(100);
-				std::cout << "init Asteroid: " << i << std::endl;
+			initGameObject(player, 400, 300, 100, 100, "Boat.png", "Player");
+			SDL_RenderCopy(renderer, background, NULL, NULL);
+			SDL_RenderPresent(renderer);
+			int MousePosX, MousePosY;
+			while (counter < NumberOfPoints) {
+				SDL_Event Buttonclick;
+				SDL_WaitEvent(&Buttonclick);
+				switch (Buttonclick.type)
+				{
+				case SDL_MOUSEBUTTONDOWN:
+					SDL_GetMouseState(&MousePosX, &MousePosY);
+					initGameObject(asteroids[counter+1], MousePosX, MousePosY, 100, 100, "Ice.png", "Asteroid");
+					counter++;
+					break;
+				default:
+					break;
+
+				}
 			}
+			initGameObject(asteroids[0], MousePosX, MousePosY, 100, 100, "Ice.png", "Asteroid");
+			asteroids[0] = asteroids[1];
+			counter = 0;
 			gameIsInitialized = true;
 
 		}
 		else {
 
-			for (int i = 0; i < asteroids.size(); i++) {
-				UpdateGameObject(asteroids[i]);
-				srand(time(NULL) + i);
-				if ((player.DestR.x - asteroids[i].DestR.x) * (player.DestR.x - asteroids[i].DestR.x) + (player.DestR.y - asteroids[i].DestR.y) * (player.DestR.y - asteroids[i].DestR.y) < 50 * 50) {
-					asteroids[i].DestR.x = rand() % 450 + 150;
-					SDL_Delay(100);
-					asteroids[i].DestR.y = rand() % 450 + 150, 50, 50;
+			
+				UpdateGameObject(asteroids[0]);
+				//srand(time(NULL) + i);
+				if ((player.DestR.x - asteroids[0].DestR.x) * (player.DestR.x - asteroids[0].DestR.x) + (player.DestR.y - asteroids[0].DestR.y) * (player.DestR.y - asteroids[0].DestR.y) < 100 * 100) {
+					counter++;
+					if (counter <= NumberOfPoints) {
+						asteroids[0] = asteroids[counter];
+					}
+					else {
+						asteroids[0] = asteroids[1];
+						counter = 1;
+					}
+					
 				}
-			}
+			
 
 			if (collector.Direction == MyoController::Left) {
 				player.xdir = -1;
 				player.ydir = 0;
-				float targetX, targetY, targetZ;
-				targetX = currentPosX + player.xdir;
-				targetY = currentPosY;
-				targetZ = currentPosZ + player.ydir;
-
 
 				//if (targetX * targetX + targetY * targetY + targetZ * targetZ <= 370 * 370) {
-				currentPosX -= player.xdir;
-				currentPosZ -= player.ydir;
-				//}
-
+				currentPosX -= player.xdir*Scalar;
+				currentPosZ -= player.ydir * Scalar;
 
 
 			}
 			else if (collector.Direction == MyoController::Right) {
 				player.xdir = 1;
 				player.ydir = 0;
-				float targetX, targetY, targetZ;
-				targetX = currentPosX + player.xdir;
-				targetY = currentPosY;
-				targetZ = currentPosZ + player.ydir;
-				//if (targetX * targetX + targetY * targetY + targetZ * targetZ <= 370 * 370) {
-				currentPosX -= player.xdir;
-				currentPosZ -= player.ydir;
-				//}
+				currentPosX -= player.xdir * Scalar;
+				currentPosZ -= player.ydir * Scalar;
 
 			}
 			else if (collector.Direction == MyoController::Down) {
 				player.xdir = 0;
 				player.ydir = 1;
-				float targetX, targetY, targetZ;
-				targetX = currentPosX + player.xdir;
-				targetY = currentPosY;
-				targetZ = currentPosZ + player.ydir;
-				//if (targetX * targetX + targetY * targetY + targetZ * targetZ <= 370 * 370) {
-				currentPosX -= player.xdir;
-				currentPosZ -= player.ydir;
-				//}
+				currentPosX -= player.xdir * Scalar;
+				currentPosZ -= player.ydir * Scalar;
+
 
 			}
 			else if (collector.Direction == MyoController::Up) {
 				player.xdir = 0;
 				player.ydir = -1;
-				float targetX, targetY, targetZ;
-				targetX = currentPosX + player.xdir;
-				targetY = currentPosY;
-				targetZ = currentPosZ + player.ydir;
-				//if (targetX * targetX + targetY * targetY + targetZ * targetZ <= 360 * 360) {
-				currentPosX -= player.xdir;
-				currentPosZ -= player.ydir;
+				currentPosX -= player.xdir * Scalar;
+				currentPosZ -= player.ydir * Scalar;
 
 			}
 			else {
@@ -146,13 +173,30 @@ void RehabilitationGame::update(MyoController& collector)
 				player.ydir = 0;
 			}
 			TargetAngles = CCK.InverseKinematics(currentPosX, currentPosY, currentPosZ);
-			CrustCrawlerDynamics::Angles theta;
-			theta.theta1 = TargetAngles.theta1;
-			theta.theta2 = TargetAngles.theta2;
-			theta.theta3 = TargetAngles.theta3;
-			theta.theta4 = TargetAngles.theta4;
-			
-			Dynamics.control(theta);
+
+
+			theta[0] = TargetAngles.theta1 * 3.14 / 180;
+			theta[1] = TargetAngles.theta2 * 3.14 / 180;
+			theta[2] = TargetAngles.theta3 * 3.14 / 180;
+			theta[3] = TargetAngles.theta4 * 3.14 / 180;
+			//std::cout << "theta 3 before" << theta[2] << " ";
+			CrustCrawlerKinematics::Trajectory trajectory = CCK.TrajectoryGeneration(theta, Dynamics.angle, Dynamics.anglevelocity);
+
+			theta[0] = trajectory.theta[0];
+			theta[1] = trajectory.theta[1];
+			theta[2] = trajectory.theta[2];
+			theta[3] = trajectory.theta[3];
+			//std::cout << "theta 3 after" << theta[2] << " " << std::endl;
+			dtheta[0] = trajectory.dtheta[0];
+			dtheta[1] = trajectory.dtheta[1];
+			dtheta[2] = trajectory.dtheta[2];
+			dtheta[3] = trajectory.dtheta[3];
+
+			ddtheta[0] = trajectory.ddtheta[0];
+			ddtheta[1] = trajectory.ddtheta[1];
+			ddtheta[2] = trajectory.ddtheta[2];
+			ddtheta[3] = trajectory.ddtheta[3];
+			Dynamics.control(theta, dtheta, ddtheta);
 			UpdateGameObject(player);
 		}
 
@@ -169,9 +213,8 @@ void RehabilitationGame::render()
 	SDL_RenderCopy(renderer, background, NULL, NULL);
 	if (gameIsInitialized) {
 		RenderGameObject(player);
-		for (int i = 0; i < asteroids.size(); i++) {
-			RenderGameObject(asteroids[i]);
-		}
+			RenderGameObject(asteroids[0]);
+		
 	}
 
 
@@ -197,8 +240,8 @@ void RehabilitationGame::UpdateGameObject(GameObject& gameObject)
 {
 
 
-	gameObject.DestR.x += gameObject.xdir * 2;
-	gameObject.DestR.y += gameObject.ydir * 2;
+	gameObject.DestR.x += gameObject.xdir * 5;
+	gameObject.DestR.y += gameObject.ydir * 5;
 	gameObject.DestR.w = gameObject.Size.x;
 	gameObject.DestR.h = gameObject.Size.y;
 
@@ -304,53 +347,51 @@ void RehabilitationGame::GameSettings()
 
 	for (int i = 0; i < 3; i++)
 	{
-		SDL_Surface* Text = TTF_RenderText_Solid(TextFont, "2", black);
+		SDL_Surface* Text = TTF_RenderText_Solid(TextFont, "1", black);
 		SDL_Texture* Texture = SDL_CreateTextureFromSurface(settingsrenderer, Text);
 		switch (i)
 		{
 		case 0:
-			Text = TTF_RenderText_Solid(TextFont, "2", black);
+			Text = TTF_RenderText_Solid(TextFont, "10", black);
 			Texture = SDL_CreateTextureFromSurface(settingsrenderer, Text);
 			SDL_RenderCopy(settingsrenderer, Texture, NULL, &ShoulderText[i]);
 
-			Text = TTF_RenderText_Solid(TextFont, "2", black);
+			Text = TTF_RenderText_Solid(TextFont, "40", black);
 			Texture = SDL_CreateTextureFromSurface(settingsrenderer, Text);
 			SDL_RenderCopy(settingsrenderer, Texture, NULL, &DisText[i]);
 
 			Text = TTF_RenderText_Solid(TextFont, "2", black);
 			Texture = SDL_CreateTextureFromSurface(settingsrenderer, Text);
 			SDL_RenderCopy(settingsrenderer, Texture, NULL, &PointText[i]);
-			NumberOfPoints = 2;
+			
 			break;
 
 		case 1:
-			Text = TTF_RenderText_Solid(TextFont, "4", black);
+			Text = TTF_RenderText_Solid(TextFont, "20", black);
 			Texture = SDL_CreateTextureFromSurface(settingsrenderer, Text);
 			SDL_RenderCopy(settingsrenderer, Texture, NULL, &ShoulderText[i]);
 
-			Text = TTF_RenderText_Solid(TextFont, "4", black);
+			Text = TTF_RenderText_Solid(TextFont, "50", black);
 			Texture = SDL_CreateTextureFromSurface(settingsrenderer, Text);
 			SDL_RenderCopy(settingsrenderer, Texture, NULL, &DisText[i]);
 
-			Text = TTF_RenderText_Solid(TextFont, "4", black);
+			Text = TTF_RenderText_Solid(TextFont, "3", black);
 			Texture = SDL_CreateTextureFromSurface(settingsrenderer, Text);
 			SDL_RenderCopy(settingsrenderer, Texture, NULL, &PointText[i]);
-			NumberOfPoints = 4;
 			break;
 
 		case 2:
-			Text = TTF_RenderText_Solid(TextFont, "6", black);
+			Text = TTF_RenderText_Solid(TextFont, "30", black);
 			Texture = SDL_CreateTextureFromSurface(settingsrenderer, Text);
 			SDL_RenderCopy(settingsrenderer, Texture, NULL, &ShoulderText[i]);
 
-			Text = TTF_RenderText_Solid(TextFont, "6", black);
+			Text = TTF_RenderText_Solid(TextFont, "60", black);
 			Texture = SDL_CreateTextureFromSurface(settingsrenderer, Text);
 			SDL_RenderCopy(settingsrenderer, Texture, NULL, &DisText[i]);
 
-			Text = TTF_RenderText_Solid(TextFont, "6", black);
+			Text = TTF_RenderText_Solid(TextFont, "4", black);
 			Texture = SDL_CreateTextureFromSurface(settingsrenderer, Text);
 			SDL_RenderCopy(settingsrenderer, Texture, NULL, &PointText[i]);
-			NumberOfPoints = 6;
 			break;
 		default:
 			break;
@@ -405,14 +446,45 @@ void RehabilitationGame::GameSettings()
 					if (MousePosX > Shoulder[i].x && MousePosX < Shoulder[i].w + Shoulder[i].x && MousePosY > Shoulder[i].y && MousePosY < Shoulder[i].h + Shoulder[i].y)
 					{
 						SDL_RenderFillRect(settingsrenderer, &Shoulder[i]);
+						switch (i)
+						{
+						case 0:
+							CCK.ShoulderHeightFromBase = 100;
+							break;
+						case 1:
+							CCK.ShoulderHeightFromBase = 200;
+							break;
+						case 2:
+							CCK.ShoulderHeightFromBase = 300;
+							break;
+						default:
+							break;
+						}
 					}
 					else if (MousePosX > Dis[i].x && MousePosX < Dis[i].w + Dis[i].x && MousePosY > Dis[i].y && MousePosY < Dis[i].h + Dis[i].y)
 					{
 						SDL_RenderFillRect(settingsrenderer, &Dis[i]);
+						switch (i)
+						{
+
+						case 0:
+							CCK.ShoulderDistanceFromBase = 400;
+							break;
+						case 1:
+							CCK.ShoulderDistanceFromBase = 500;
+							break;
+						case 2:
+							CCK.ShoulderDistanceFromBase = 600;
+							break;
+						default:
+							break;
+						}
 					}
 					else if (MousePosX > Point[i].x && MousePosX < Point[i].w + Point[i].x && MousePosY > Point[i].y && MousePosY < Point[i].h + Point[i].y)
 					{
 						SDL_RenderFillRect(settingsrenderer, &Point[i]);
+
+						NumberOfPoints = i+2;
 					}
 				}
 				SDL_RenderPresent(settingsrenderer);

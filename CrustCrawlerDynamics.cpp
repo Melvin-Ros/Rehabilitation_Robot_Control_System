@@ -5,16 +5,19 @@ void CrustCrawlerDynamics::errortheta()
     for (int i = 0; i < 4; i++)
     {
         err[i] = Thetaref[i] - angle[i];
-
     }
 }
 
 void CrustCrawlerDynamics::errordtheta()
 {
+   
     for (int i = 0; i < 4; i++)
     {
+        
         derr[i] = dThetaref[i] - anglevelocity[i];
+       // std::cout << "derr " << i << " " << derr[i] << " ";
     }
+    //std::cout << std::endl;
 }
 
 void CrustCrawlerDynamics::UpdatePos()
@@ -72,23 +75,23 @@ void CrustCrawlerDynamics::UpdatePos()
 
 }
 
-void CrustCrawlerDynamics::updateref(Angles theta)
+void CrustCrawlerDynamics::updateref(float theta[4], float dtheta[4], float ddtheta[4])
 {
-    Thetaref[0] = theta.theta1;
-    dThetaref[0] = 0;
-    ddThetaref[0] = 0;
+    Thetaref[0] = theta[0];
+    dThetaref[0] = dtheta[0];
+    ddThetaref[0] = ddtheta[0];
 
-    Thetaref[1] = theta.theta2;
+    Thetaref[1] = theta[1];
     dThetaref[1] = 0;
     ddThetaref[1] = 0;
 
-    Thetaref[2] = theta.theta3;
+    Thetaref[2] = theta[2];
     dThetaref[2] = 0;
     ddThetaref[2] = 0;
 
-    Thetaref[3] = theta.theta4;
-    dThetaref[3] = 0;
-    ddThetaref[3] = 0;
+    Thetaref[3] = theta[3];
+    dThetaref[3] = dtheta[3];
+    ddThetaref[3] = ddtheta[3];
 }
 
 void CrustCrawlerDynamics::updatem()
@@ -142,36 +145,35 @@ void CrustCrawlerDynamics::send_torque()
     message += ':';
 
 
-    std::cout << message << std::endl;
+   // std::cout << message << std::endl;
     serial.writeString(message);
 
 }
 
-void CrustCrawlerDynamics::control(Angles theta)
+void CrustCrawlerDynamics::control(float theta[4], float dtheta[4], float ddtheta[4])
 {
     
-    updateref(theta);
+    updateref(theta, dtheta, ddtheta);
     UpdatePos();
     for (int i = 0; i < 4; i++) {
         // std::cout << i << " " << angle[i] << " ";
         anglevelocity[i] *= 3.14 / 180;
         angle[i] *= 3.14 / 180;
-        Thetaref[i] *= 3.14 / 180;
     }
     angle[1] -= 3.14;
     angle[2] -= 3.14;
     angle[3] -= 3.14;
    
-    std::cout << std::endl;
+   // std::cout << std::endl;
     errortheta();
     errordtheta();
     updatem();
     updateg();
     for (int i = 0; i < 4; i++) {
-        torque[i] = m[i] * ((kp[i] * err[i]) + (kd[i] * derr[i])) + g[i];
-
+        torque[i] = m[i] * (ddThetaref[i] + (kp[i] * err[i]) + (kd[i] * derr[i])) + g[i];
+        //std::cout << "derr " << i << " " << derr[i];
     }
-    std::cout << std::endl;
+   // std::cout << std::endl;
 
     send_torque();
 }

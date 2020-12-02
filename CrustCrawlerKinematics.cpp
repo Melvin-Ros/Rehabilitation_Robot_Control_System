@@ -1,12 +1,6 @@
 #include "CrustCrawlerKinematics.h"
 #include <armadillo>
 CrustCrawlerKinematics::Pos CrustCrawlerKinematics::ForwardKinematics(float t1,float t2,float t3,float t4) {
-	TargetMatrix =
-	{
-	   {cos(t1 + t2 + t3 + t4) / 2 - cos(t2 - t1 + t3 + t4) / 2, sin(t2 - t1 + t3 + t4) / 2 - sin(t1 + t2 + t3 + t4) / 2, -cos(t1), -(sin(t1) * (290 * sin(t2 + t3) + 437 * sin(t2))) / 2},
-	   { sin(t2 - t1 + t3 + t4) / 2 + sin(t1 + t2 + t3 + t4) / 2, cos(t1 + t2 + t3 + t4) / 2 + cos(t2 - t1 + t3 + t4) / 2, -sin(t1), (cos(t1) * (290 * sin(t2 + t3) + 437 * sin(t2))) / 2 },
-	   { cos(t2 + t3 + t4), -sin(t2 + t3 + t4), 0, 147 * cos(t2 + t3) + (437 * cos(t2)) / 2 },
-	   { 0, 0, 0, 1 } };
 	float z = TargetMatrix(2, 3);
 	float y = TargetMatrix(1, 3);
 	t4 = (90 * PI / 180 - t2 - t3) + atan(abs((z - ShoulderHeightFromBase)) / abs((ShoulderDistanceFromBase - y)));
@@ -45,29 +39,49 @@ CrustCrawlerKinematics::Angles CrustCrawlerKinematics::InverseKinematics(float x
 	return angles;
 }
 
-arma::Mat<double> CrustCrawlerKinematics::TrajectoryGeneration(Angles goalAngles, CurrentAngles currentAngles, CurrentVelocity currentVelocity) {
+CrustCrawlerKinematics::Trajectory CrustCrawlerKinematics::TrajectoryGeneration(float goalAngles[4], float currentAngles[4], float currentVelocity[4]) {
 	float tf = 1;
-	float t = 0;
-	
+	float t = 0.5;
 
-	float a = currentAngles.theta0_1;
-	float b = currentAngles.theta0_2;
-	float c = currentAngles.theta0_3;
-	float d = currentAngles.theta0_4;
-	float e = goalAngles.theta1;
-	float f = goalAngles.theta2;
-	float g = goalAngles.theta3;
-	float h = goalAngles.theta4;
-	float i = currentVelocity.dtheta1;
-	float j = currentVelocity.dtheta2;
-	float k = currentVelocity.dtheta3;
-	float l = currentVelocity.dtheta4;
+	float a = currentAngles[0];
+	float b = currentAngles[1];
+	float c = currentAngles[2];
+	float d = currentAngles[3];
+	float e = goalAngles[0];
+	float f = goalAngles[1];
+	float g = goalAngles[2];
+	float h = goalAngles[3];
+	float i = currentVelocity[0];
+	float j = currentVelocity[1];
+	float k = currentVelocity[2];
+	float l = currentVelocity[3];
 
-	return {
+	Trajectory trajectory;
+	trajectory.theta[0] = a - (3 * (t * t) * (a - e)) / (tf * tf) + (2 * (t * t * t) * (a - e)) / (tf * tf * tf);
+	trajectory.theta[1] = b - (3 * (t * t) * (b - f)) / (tf * tf) + (2 * (t * t * t) * (b - f)) / (tf * tf * tf);
+	trajectory.theta[2] = c - (3 * (t * t) * (c - g)) / (tf * tf) + (2 * (t * t * t) * (c - g)) / (tf * tf * tf);
+	trajectory.theta[3] = d - (3 * (t * t) * (d - h)) / (tf * tf) + (2 * (t * t * t) * (d - h)) / (tf * tf * tf);
+
+	trajectory.dtheta[0] = (6 * (t * t) * (a - e)) / (tf * tf * tf) - (6 * t * (a - e)) / (tf * tf);
+	trajectory.dtheta[1] = (6 * (t * t) * (b - f)) / (tf * tf * tf) - (6 * t * (b - f)) / (tf * tf);
+	trajectory.dtheta[2] = (6 * (t * t) * (c - g)) / (tf * tf * tf) - (6 * t * (c - g)) / (tf * tf);
+	trajectory.dtheta[3] = (6 * (t * t) * (d - h)) / (tf * tf * tf) - (6 * t * (d - h)) / (tf * tf);
+
+	trajectory.ddtheta[0] = (12 * t * (a - e)) / (tf * tf * tf) - (6 * (a - e)) / (tf * tf);
+	trajectory.ddtheta[1] = (12 * t * (b - f)) / (tf * tf * tf) - (6 * (b - f)) / (tf * tf);
+	trajectory.ddtheta[2] = (12 * t * (c - g)) / (tf * tf * tf) - (6 * (c - g)) / (tf * tf);
+	trajectory.ddtheta[3] = (12 * t * (d - h)) / (tf * tf * tf) - (6 * (d - h)) / (tf * tf);
+	/*for (int i = 0; i < 4; i++) {
+		std::cout << "T" << i << ": " << trajectory.theta[i] << " ";
+	}*/
+	//std::cout << std::endl;
+	/*return {
 		{a - (3 * (t * t) * (a - e)) / (tf * tf) + (2 * (t * t * t) * (a - e)) / (tf * tf * tf), (6 * (t * t) * (a - e)) / (tf * tf * tf) - (6 * t * (a - e)) / (tf * tf), (12 * t * (a - e)) / (tf * tf * tf) - (6 * (a - e)) / (tf * tf)},
 		{b - (3 * (t * t) * (b - f)) / (tf * tf) + (2 * (t * t * t) * (b - f)) / (tf * tf * tf), (6 * (t * t) * (b - f)) / (tf * tf * tf) - (6 * t * (b - f)) / (tf * tf), (12 * t * (b - f)) / (tf * tf * tf) - (6 * (b - f)) / (tf * tf)},
 		{c - (3 * (t * t) * (c - g)) / (tf * tf) + (2 * (t * t * t) * (c - g)) / (tf * tf * tf), (6 * (t * t) * (c - g)) / (tf * tf * tf) - (6 * t * (c - g)) / (tf * tf), (12 * t * (c - g)) / (tf * tf * tf) - (6 * (c - g)) / (tf * tf)},
 		{d - (3 * (t * t) * (d - h)) / (tf * tf) + (2 * (t * t * t) * (d - h)) / (tf * tf * tf), (6 * (t * t) * (d - h)) / (tf * tf * tf) - (6 * t * (d - h)) / (tf * tf), (12 * t * (d - h)) / (tf * tf * tf) - (6 * (d - h)) / (tf * tf)}
-	};
+	};*/
+
+	return trajectory;
 }
 
