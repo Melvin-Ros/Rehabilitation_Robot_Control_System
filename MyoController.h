@@ -20,6 +20,7 @@ public:
         : onArm(false), isUnlocked(false), currentPose()
     {
     }
+
     // onPose() is called whenever the Myo detects that the person wearing it has changed their pose, for example,
     // making a fist, or not making a fist anymore.
     void onPose(myo::Myo* myo, uint64_t timestamp, myo::Pose pose);

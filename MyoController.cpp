@@ -47,29 +47,37 @@ void MyoController::onEmgData(myo::Myo* myo, uint64_t timestamp, const int8_t* e
 
         CurrentEMG.push_back(temp);
         CurrentEMG.erase(CurrentEMG.begin());
+
         float up = averageEMG[4] * 1.5 / (1 + averageEMG[1] + averageEMG[7]);
         float right = averageEMG[3] * 2.7 / (1 + averageEMG[7] + averageEMG[1]);
         float left = (averageEMG[0] + averageEMG[7]) / (averageEMG[5] + 1);
         float down = (1 * (averageEMG[0] + averageEMG[1] + averageEMG[2])) / (1 + averageEMG[5] + averageEMG[6]);
         float rest = (averageEMG[4] + averageEMG[5] + averageEMG[6] + averageEMG[7]) / 20;
+
+
         if (up + right + left + down <= 5) {
             Direction = Rest;
+            
         }
         else if (up > right && up > left && up > down)
         {
             Direction = Up;
+           
         }
         else if (left > right && left > up && left > down)
         {
             Direction = Left;
+            
         }
         else if (right > left && right > up && right > down)
         {
             Direction = Right;
+          
         }
         else if (down > right && down > left && down > up)
         {
             Direction = Down;
+           
         }
     }
 }

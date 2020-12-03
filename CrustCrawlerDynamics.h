@@ -6,8 +6,10 @@ public:
 	float Thetaref[4];                                                              //
 	float dThetaref[4];                                                             //
 	float ddThetaref[4];                                                            //
-	float kp[4] = { 50, 70, 100, 500 };                                                    //
-	float kd[4] = { 15, 48, 20, 80 };                                                   //
+	
+	float kp[4] = { 70, 120, 250, 445 };                                                    //
+	float kd[4] = {  14, 35, 30,  50 };                                                   //
+	
 	float m[4];                                                                     //
 	float g[4];
 	float anglevelocity[4];

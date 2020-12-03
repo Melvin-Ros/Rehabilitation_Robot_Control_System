@@ -12,7 +12,9 @@ RehabilitationGame::GameObject player;
 CrustCrawlerKinematics CCK;
 CrustCrawlerDynamics Dynamics;
 CrustCrawlerKinematics::Angles TargetAngles;
-int Scalar = 5;
+int sampleCounter = 0;
+int Scalarx = 3;
+int Scalary= 5;
 float currentPosX = 0;
 float currentPosY = 147;
 float currentPosZ = 210;
@@ -27,7 +29,7 @@ void RehabilitationGame::init(const char* title, int posx, int posy, int width, 
 	GameSettings();
 
 	CrustCrawlerKinematics::Pos tempPos;
-	tempPos = CCK.ForwardKinematics(0, 0, 90, 0);
+	tempPos = CCK.ForwardKinematics(0, 40, 100, 0);
 	currentPosX = tempPos.x;
 	currentPosZ = tempPos.z;
 	currentPosY = tempPos.y;
@@ -93,7 +95,7 @@ void RehabilitationGame::update(MyoController& collector)
 	if (startGame) {
 
 		if (!gameIsInitialized) {
-			initGameObject(player, 400, 300, 100, 100, "Boat.png", "Player");
+			initGameObject(player, 250, 200, 100, 100, "Boat.png", "Player");
 			SDL_RenderCopy(renderer, background, NULL, NULL);
 			SDL_RenderPresent(renderer);
 			int MousePosX, MousePosY;
@@ -135,38 +137,42 @@ void RehabilitationGame::update(MyoController& collector)
 					
 				}
 			
-
+				
 			if (collector.Direction == MyoController::Left) {
+				std::cout << "Left" << std::endl;
 				player.xdir = -1;
 				player.ydir = 0;
 
 				//if (targetX * targetX + targetY * targetY + targetZ * targetZ <= 370 * 370) {
-				currentPosX -= player.xdir*Scalar;
-				currentPosZ -= player.ydir * Scalar;
-
+				currentPosX -= player.xdir*Scalarx;
+				currentPosZ -= player.ydir * Scalary;
+				sampleCounter++;
 
 			}
 			else if (collector.Direction == MyoController::Right) {
+				std::cout << "Right" << std::endl;
 				player.xdir = 1;
 				player.ydir = 0;
-				currentPosX -= player.xdir * Scalar;
-				currentPosZ -= player.ydir * Scalar;
-
+				currentPosX -= player.xdir * Scalarx;
+				currentPosZ -= player.ydir * Scalary;
+				sampleCounter++;
 			}
 			else if (collector.Direction == MyoController::Down) {
+				std::cout << "Down" << std::endl;
 				player.xdir = 0;
 				player.ydir = 1;
-				currentPosX -= player.xdir * Scalar;
-				currentPosZ -= player.ydir * Scalar;
-
+				currentPosX -= player.xdir * Scalarx;
+				currentPosZ -= player.ydir * Scalary;
+				sampleCounter++;
 
 			}
 			else if (collector.Direction == MyoController::Up) {
+				std::cout << "Up" << std::endl;
 				player.xdir = 0;
 				player.ydir = -1;
-				currentPosX -= player.xdir * Scalar;
-				currentPosZ -= player.ydir * Scalar;
-
+				currentPosX -= player.xdir * Scalarx;
+				currentPosZ -= player.ydir * Scalary;
+				sampleCounter++;
 			}
 			else {
 				player.xdir = 0;
@@ -449,13 +455,13 @@ void RehabilitationGame::GameSettings()
 						switch (i)
 						{
 						case 0:
-							CCK.ShoulderHeightFromBase = 100;
+							CCK.ShoulderHeightFromBase = 0;
 							break;
 						case 1:
-							CCK.ShoulderHeightFromBase = 200;
+							CCK.ShoulderHeightFromBase = 100;
 							break;
 						case 2:
-							CCK.ShoulderHeightFromBase = 300;
+							CCK.ShoulderHeightFromBase = 200;
 							break;
 						default:
 							break;

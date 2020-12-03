@@ -182,7 +182,7 @@ void Rehabilitation_GUI::MainMenu()
 
 				RehabilitationGame game;
 
-				game.init("game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, collector);
+				game.init("game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 600, collector);
 				while (game.startGame) {
 					hub.run(1);
 
