@@ -7,8 +7,8 @@ public:
 	float dThetaref[4];                                                             //
 	float ddThetaref[4];                                                            //
 	
-	float kp[4] = { 70, 120, 250, 445 };                                                    //
-	float kd[4] = {  14, 35, 30,  50 };                                                   //
+	float kp[4] = { 40, 110, 250, 445 };                                                    //
+	float kd[4] = {  5, 30, 28,  50 };                                                   //
 	
 	float m[4];                                                                     //
 	float g[4];

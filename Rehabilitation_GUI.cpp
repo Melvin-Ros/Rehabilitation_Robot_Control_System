@@ -47,8 +47,6 @@ void Rehabilitation_GUI::MainMenu()
 
 	//upload image file to memory as an sdl surface
 	SDL_Surface* background = IMG_Load("armeobackground.png");
-
-
 	//convert the image into something usefull
 	SDL_Texture* armeobackground = SDL_CreateTextureFromSurface(renderer, background);
 
@@ -62,9 +60,6 @@ void Rehabilitation_GUI::MainMenu()
 
 	//make the texture file into background
 	SDL_RenderCopy(renderer, armeobackground, NULL, &background_rect);
-
-	//present the rendered data
-	SDL_RenderPresent(renderer);
 
 	// create button for start
 	SDL_Rect BUTTON_start;
@@ -87,53 +82,24 @@ void Rehabilitation_GUI::MainMenu()
 	BUTTON_quit.x = quitplacementx;
 	BUTTON_quit.y = buttonplacementy;
 
-	// draw button color
-	SDL_SetRenderDrawColor(renderer, 192, 192, 192, SDL_ALPHA_OPAQUE);
-	SDL_RenderFillRect(renderer, &BUTTON_start);
-	//SDL_RenderFillRect(renderer, &BUTTON_settings);
-	SDL_RenderFillRect(renderer, &BUTTON_quit);
-	SDL_RenderPresent(renderer);
-	//initiate text library
-	TTF_Init();
-	//this opens a font style and sets a size
-	TTF_Font* Sans = TTF_OpenFont("Roboto-Black.ttf", 20);
-	// this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
-	SDL_Color black = { 0, 0, 0 };
-	// as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
-	//SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Sans, "settings", black);
-	//now you can convert it into a texture like the image
-	//SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+	SDL_Surface* Start = IMG_Load("Start.png");
+	//convert the image into something usefull
+	SDL_Texture* StartTexture = SDL_CreateTextureFromSurface(renderer, Start);
+	//make the texture file into background
+	SDL_RenderCopy(renderer, StartTexture, NULL, &BUTTON_start);
+
+	SDL_Surface* Quit = IMG_Load("Quit.png");
+	//convert the image into something usefull
+	SDL_Texture* QuitTexture = SDL_CreateTextureFromSurface(renderer, Quit);
+	//make the texture file into background
+	SDL_RenderCopy(renderer, QuitTexture, NULL, &BUTTON_quit);
 
 
-	//Mind you that (0,0) is on the top left of the window/screen, think a rect as the text's box, that way it would be very simple to understand
 
-	//Now since it's a texture, you have to put RenderCopy in your game loop area, the area where the whole code executes
-
-	//SDL_RenderCopy(renderer, Message, NULL, &BUTTON_settings); //you put the renderer's name first, the Message, the crop size(you can ignore this if you don't want to dabble with cropping), and the rect which is the size and coordinate of your texture
-
-	SDL_RenderPresent(renderer);
-	//Don't forget to free your surface and texture
-	//SDL_FreeSurface(surfaceMessage);
-	//SDL_DestroyTexture(Message);
-
-	// create start button
-
-	SDL_Surface* starttext = TTF_RenderText_Solid(Sans, "  Start  ", black);
-	//now you can convert it into a texture like the image
-	SDL_Texture* starttexttexture = SDL_CreateTextureFromSurface(renderer, starttext);
-
-	SDL_Surface* quittext = TTF_RenderText_Solid(Sans, "  quit  ", black);
-	//now you can convert it into a texture like the image
-	SDL_Texture* quittexttexture = SDL_CreateTextureFromSurface(renderer, quittext);
-	//Mind you that (0,0) is on the top left of the window/screen, think a rect as the text's box, that way it would be very simple to understand
-
-	//Now since it's a texture, you have to put RenderCopy in your game loop area, the area where the whole code executes
-
-	SDL_RenderCopy(renderer, starttexttexture, NULL, &BUTTON_start); //you put the renderer's name first, the Message, the crop size(you can ignore this if you don't want to dabble with cropping), and the rect which is the size and coordinate of your texture
-	SDL_RenderCopy(renderer, quittexttexture, NULL, &BUTTON_quit);
-
+	//present the rendered data
 	SDL_RenderPresent(renderer);
 
+	
 
 	while (continue_func == false)
 	{

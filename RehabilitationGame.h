@@ -23,7 +23,12 @@ public:
 		int xdir = 0;
 		int ydir = 0;
 	};
-
+	int quitplacementx = 500;
+	int buttonplacementy = 20;
+	int buttonw = 100;
+	int buttonh = 30;
+	SDL_Rect BUTTON_quit;
+	
 	void init(const char* title, int posx, int posy, int width, int height, MyoController& collector);
 	void update(MyoController& collector);
 	void render();

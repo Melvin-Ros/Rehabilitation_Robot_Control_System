@@ -78,8 +78,8 @@ void CrustCrawlerDynamics::UpdatePos()
 void CrustCrawlerDynamics::updateref(float theta[4], float dtheta[4], float ddtheta[4])
 {
     Thetaref[0] = theta[0];
-    dThetaref[0] = dtheta[0];
-    ddThetaref[0] = ddtheta[0];
+    dThetaref[0] = 0;
+    ddThetaref[0] = 0;
 
     Thetaref[1] = theta[1];
     dThetaref[1] = 0;

@@ -93,13 +93,26 @@ void RehabilitationGame::update(MyoController& collector)
 {
 
 	if (startGame) {
+		BUTTON_quit.w = buttonw;
+		BUTTON_quit.h = buttonh;
+		BUTTON_quit.x = quitplacementx;
+		BUTTON_quit.y = buttonplacementy;
+		BUTTON_quit.y = buttonplacementy;
+		
 
 		if (!gameIsInitialized) {
 			initGameObject(player, 250, 200, 100, 100, "Boat.png", "Player");
-			SDL_RenderCopy(renderer, background, NULL, NULL);
-			SDL_RenderPresent(renderer);
+		
+			//make the texture file into background
+			
 			int MousePosX, MousePosY;
 			while (counter < NumberOfPoints) {
+				if (counter == 0) {
+					SDL_RenderCopy(renderer, background, NULL, NULL);
+					SDL_RenderPresent(renderer);
+				}
+			
+				
 				SDL_Event Buttonclick;
 				SDL_WaitEvent(&Buttonclick);
 				switch (Buttonclick.type)
@@ -107,6 +120,9 @@ void RehabilitationGame::update(MyoController& collector)
 				case SDL_MOUSEBUTTONDOWN:
 					SDL_GetMouseState(&MousePosX, &MousePosY);
 					initGameObject(asteroids[counter+1], MousePosX, MousePosY, 100, 100, "Ice.png", "Asteroid");
+					SDL_RenderCopy(renderer, background, NULL, NULL);
+					RenderGameObject(asteroids[counter + 1]);
+					SDL_RenderPresent(renderer);
 					counter++;
 					break;
 				default:
@@ -121,8 +137,26 @@ void RehabilitationGame::update(MyoController& collector)
 
 		}
 		else {
-
+			int MousePosX, MousePosY;
+			SDL_Event Buttonclick;
+			SDL_WaitEvent(&Buttonclick);
+			switch (Buttonclick.type)
+			{
+			case SDL_MOUSEBUTTONDOWN:
+				SDL_GetMouseState(&MousePosX, &MousePosY);
 			
+				if (MousePosX < quitplacementx + buttonw && MousePosX > quitplacementx && MousePosY < buttonplacementy + buttonw && MousePosY > buttonplacementy)
+				{
+					startGame = false;
+				}
+				//counter++;
+				break;
+			default:
+				break;
+
+			}
+			
+
 				UpdateGameObject(asteroids[0]);
 				//srand(time(NULL) + i);
 				if ((player.DestR.x - asteroids[0].DestR.x) * (player.DestR.x - asteroids[0].DestR.x) + (player.DestR.y - asteroids[0].DestR.y) * (player.DestR.y - asteroids[0].DestR.y) < 100 * 100) {
@@ -217,6 +251,10 @@ void RehabilitationGame::render()
 {
 	SDL_RenderClear(renderer);
 	SDL_RenderCopy(renderer, background, NULL, NULL);
+	SDL_Surface* Quit = IMG_Load("Quit.png");
+	//convert the image into something usefull
+	SDL_Texture* QuitTexture = SDL_CreateTextureFromSurface(renderer, Quit);
+	SDL_RenderCopy(renderer, QuitTexture, NULL, &BUTTON_quit);
 	if (gameIsInitialized) {
 		RenderGameObject(player);
 			RenderGameObject(asteroids[0]);
@@ -276,7 +314,6 @@ void RehabilitationGame::GameSettings()
 
 	SDL_SetRenderDrawColor(settingsrenderer, 0, 150, 255, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(settingsrenderer);
-	SDL_RenderPresent(settingsrenderer);
 	SDL_Rect GameSettingsHeight;
 	GameSettingsHeight.x = 84;
 	GameSettingsHeight.y = 45;
@@ -305,10 +342,34 @@ void RehabilitationGame::GameSettings()
 	SDL_Rect PointText[3];
 	SDL_Rect DisText[3];
 
+	
+	SDL_Surface* Distance = IMG_Load("Distance.png");
+	//convert the image into something usefull
+	SDL_Texture* DistanceTexture = SDL_CreateTextureFromSurface(settingsrenderer, Distance);
+
+	SDL_Surface* Shoulders = IMG_Load("Shoulder.png");
+	//convert the image into something usefull
+	SDL_Texture* ShoulderTexture = SDL_CreateTextureFromSurface(settingsrenderer, Shoulders);
+
+	SDL_Surface* Number = IMG_Load("Number.png");
+	//convert the image into something usefull
+	SDL_Texture* NumberTexture = SDL_CreateTextureFromSurface(settingsrenderer, Number);
+
+	SDL_Surface* Done = IMG_Load("Start.png");
+	//convert the image into something usefull
+	SDL_Texture* DoneTexture = SDL_CreateTextureFromSurface(settingsrenderer, Done);
+
+
+	SDL_RenderCopy(settingsrenderer, DistanceTexture, NULL, &GameSettingsDist);
+	SDL_RenderCopy(settingsrenderer, ShoulderTexture, NULL, &GameSettingsHeight);
+	SDL_RenderCopy(settingsrenderer, NumberTexture, NULL, &GameSettingsPoints);
+	SDL_RenderCopy(settingsrenderer, DoneTexture, NULL, &GameSettingsDone);
+	
+	
 	TTF_Init();
 	TTF_Font* TextFont = TTF_OpenFont("Roboto-Black.ttf", 16);
 	SDL_Color black = { 0, 0, 0 };
-
+	
 	SDL_SetRenderDrawColor(settingsrenderer, 192, 192, 192, SDL_ALPHA_OPAQUE);
 	for (int i = 0; i < 3; i++)
 	{
@@ -326,7 +387,7 @@ void RehabilitationGame::GameSettings()
 		Point[i].y = 184;
 		Point[i].w = 10;
 		Point[i].h = 10;
-
+		
 		ShoulderText[i].x = 300 + 50 * i;
 		ShoulderText[i].y = 45;
 		ShoulderText[i].w = 10;
@@ -341,13 +402,13 @@ void RehabilitationGame::GameSettings()
 		PointText[i].y = 170;
 		PointText[i].w = 10;
 		PointText[i].h = 10;
-
+		
 		SDL_SetRenderDrawColor(settingsrenderer, 192, 192, 192, SDL_ALPHA_OPAQUE);
 
 		SDL_RenderFillRect(settingsrenderer, &Shoulder[i]);
 		SDL_RenderFillRect(settingsrenderer, &Dis[i]);
 		SDL_RenderFillRect(settingsrenderer, &Point[i]);
-		SDL_RenderPresent(settingsrenderer);
+		
 
 	}
 
@@ -404,32 +465,6 @@ void RehabilitationGame::GameSettings()
 		}
 
 	}
-
-	SDL_RenderFillRect(settingsrenderer, &GameSettingsDone);
-
-
-	SDL_RenderFillRect(settingsrenderer, &GameSettingsHeight);
-	SDL_RenderFillRect(settingsrenderer, &GameSettingsPoints);
-	SDL_RenderFillRect(settingsrenderer, &GameSettingsDist);
-
-	SDL_Surface* HeightText = TTF_RenderText_Solid(TextFont, "  Shoulder Height : ", black);
-	SDL_Texture* HeightTexture = SDL_CreateTextureFromSurface(settingsrenderer, HeightText);
-	SDL_RenderCopy(settingsrenderer, HeightTexture, NULL, &GameSettingsHeight);
-
-	SDL_Surface* DistText = TTF_RenderText_Solid(TextFont, "  Distance :       ", black);
-	SDL_Texture* DistTexture = SDL_CreateTextureFromSurface(settingsrenderer, DistText);
-	SDL_RenderCopy(settingsrenderer, DistTexture, NULL, &GameSettingsDist);
-
-	SDL_Surface* PointsText = TTF_RenderText_Solid(TextFont, "  Number of points :", black);
-	SDL_Texture* PointsTexture = SDL_CreateTextureFromSurface(settingsrenderer, PointsText);
-	SDL_RenderCopy(settingsrenderer, PointsTexture, NULL, &GameSettingsPoints);
-
-	SDL_Surface* DoneText = TTF_RenderText_Solid(TextFont, "  Done  ", black);
-	SDL_Texture* DoneTexture = SDL_CreateTextureFromSurface(settingsrenderer, DoneText);
-	SDL_RenderCopy(settingsrenderer, DoneTexture, NULL, &GameSettingsDone);
-	std::stringstream text;
-	text << "" << CCK.ShoulderHeightFromBase;
-
 	SDL_RenderPresent(settingsrenderer);
 	int MousePosX, MousePosY;
 	bool endsettings = false;
