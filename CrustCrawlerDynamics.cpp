@@ -1,11 +1,14 @@
 #include "CrustCrawlerDynamics.h"
 SimpleSerial serial("COM6", 115200);
+
 void CrustCrawlerDynamics::errortheta()
 {
     for (int i = 0; i < 4; i++)
     {
         err[i] = Thetaref[i] - angle[i];
+       // std::cout << "err " << i << " " << err[i] << " ";
     }
+  //  std::cout << std::endl;
 }
 
 void CrustCrawlerDynamics::errordtheta()
@@ -28,6 +31,8 @@ void CrustCrawlerDynamics::UpdatePos()
     bool start = false;
     std::string message;
     message = serial.readLine();
+
+   // std::cout << message << std::endl;
     std::string number;
     std::string vnumber;
     if (message != "") {
@@ -41,8 +46,8 @@ void CrustCrawlerDynamics::UpdatePos()
                 {
                     if (message[j] == 'A' || message[j] == 'V') {
                         j = message.length();
-                        angle[stoi(temp)] = stoi(number);
-
+                     
+                                angle[stoi(temp)] = stoi(number);
                         number = "";
                     }
                     else if ((message[j] >= '0' && message[j] <= '9') || message[j] == '-') {
@@ -145,7 +150,7 @@ void CrustCrawlerDynamics::send_torque()
     message += ':';
 
 
-   // std::cout << message << std::endl;
+    //std::cout << message << std::endl;
     serial.writeString(message);
 
 }
@@ -164,7 +169,7 @@ void CrustCrawlerDynamics::control(float theta[4], float dtheta[4], float ddthet
     angle[2] -= 3.14;
     angle[3] -= 3.14;
    
-   // std::cout << std::endl;
+  // std::cout << std::endl;
     errortheta();
     errordtheta();
     updatem();

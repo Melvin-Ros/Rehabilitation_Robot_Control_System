@@ -137,6 +137,7 @@ void RehabilitationGame::update(MyoController& collector)
 
 		}
 		else {
+			/*
 			int MousePosX, MousePosY;
 			SDL_Event Buttonclick;
 			SDL_WaitEvent(&Buttonclick);
@@ -155,7 +156,7 @@ void RehabilitationGame::update(MyoController& collector)
 				break;
 
 			}
-			
+			*/
 
 				UpdateGameObject(asteroids[0]);
 				//srand(time(NULL) + i);
@@ -173,7 +174,7 @@ void RehabilitationGame::update(MyoController& collector)
 			
 				
 			if (collector.Direction == MyoController::Left) {
-				std::cout << "Left" << std::endl;
+				//std::cout << "Left" << std::endl;
 				player.xdir = -1;
 				player.ydir = 0;
 
@@ -184,7 +185,7 @@ void RehabilitationGame::update(MyoController& collector)
 
 			}
 			else if (collector.Direction == MyoController::Right) {
-				std::cout << "Right" << std::endl;
+				//std::cout << "Right" << std::endl;
 				player.xdir = 1;
 				player.ydir = 0;
 				currentPosX -= player.xdir * Scalarx;
@@ -192,7 +193,7 @@ void RehabilitationGame::update(MyoController& collector)
 				sampleCounter++;
 			}
 			else if (collector.Direction == MyoController::Down) {
-				std::cout << "Down" << std::endl;
+			//	std::cout << "Down" << std::endl;
 				player.xdir = 0;
 				player.ydir = 1;
 				currentPosX -= player.xdir * Scalarx;
@@ -201,7 +202,7 @@ void RehabilitationGame::update(MyoController& collector)
 
 			}
 			else if (collector.Direction == MyoController::Up) {
-				std::cout << "Up" << std::endl;
+				//std::cout << "Up" << std::endl;
 				player.xdir = 0;
 				player.ydir = -1;
 				currentPosX -= player.xdir * Scalarx;
@@ -237,6 +238,9 @@ void RehabilitationGame::update(MyoController& collector)
 			ddtheta[2] = trajectory.ddtheta[2];
 			ddtheta[3] = trajectory.ddtheta[3];
 			Dynamics.control(theta, dtheta, ddtheta);
+			CrustCrawlerKinematics::Pos pos;
+			pos = CCK.ForwardKinematics(Dynamics.angle[0] * 180 / 3.14, Dynamics.angle[1] * 180 / 3.14, Dynamics.angle[2] * 180 / 3.14, Dynamics.angle[3] * 180 / 3.14);
+			std::cout << "x " << pos.x << " z " << pos.z << std::endl;
 			UpdateGameObject(player);
 		}
 
@@ -312,8 +316,20 @@ void RehabilitationGame::GameSettings()
 	// sdl texture
 	// render
 
-	SDL_SetRenderDrawColor(settingsrenderer, 0, 150, 255, SDL_ALPHA_OPAQUE);
-	SDL_RenderClear(settingsrenderer);
+	//SDL_SetRenderDrawColor(settingsrenderer, 0, 150, 255, SDL_ALPHA_OPAQUE);
+	SDL_Surface* background = IMG_Load("GUI.png");
+	//convert the image into something usefull
+	SDL_Texture* armeobackground = SDL_CreateTextureFromSurface(renderer, background);
+
+	SDL_Rect background_rect;
+	background_rect.x = 0;
+	background_rect.y = 0;
+	background_rect.w = 500;
+	background_rect.h = 360;
+
+//	SDL_RenderClear(settingsrenderer);
+	
+	//SDL_RenderPresent(settingsrenderer);
 	SDL_Rect GameSettingsHeight;
 	GameSettingsHeight.x = 84;
 	GameSettingsHeight.y = 45;
@@ -359,7 +375,7 @@ void RehabilitationGame::GameSettings()
 	//convert the image into something usefull
 	SDL_Texture* DoneTexture = SDL_CreateTextureFromSurface(settingsrenderer, Done);
 
-
+	SDL_RenderCopy(settingsrenderer, armeobackground, NULL, &background_rect);
 	SDL_RenderCopy(settingsrenderer, DistanceTexture, NULL, &GameSettingsDist);
 	SDL_RenderCopy(settingsrenderer, ShoulderTexture, NULL, &GameSettingsHeight);
 	SDL_RenderCopy(settingsrenderer, NumberTexture, NULL, &GameSettingsPoints);
@@ -371,6 +387,7 @@ void RehabilitationGame::GameSettings()
 	SDL_Color black = { 0, 0, 0 };
 	
 	SDL_SetRenderDrawColor(settingsrenderer, 192, 192, 192, SDL_ALPHA_OPAQUE);
+
 	for (int i = 0; i < 3; i++)
 	{
 		Shoulder[i].x = 300 + 50 * i;

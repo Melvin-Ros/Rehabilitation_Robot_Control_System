@@ -46,7 +46,7 @@ void Rehabilitation_GUI::MainMenu()
 	const int FLAGS = IMG_INIT_PNG;
 
 	//upload image file to memory as an sdl surface
-	SDL_Surface* background = IMG_Load("armeobackground.png");
+	SDL_Surface* background = IMG_Load("GUI.png");
 	//convert the image into something usefull
 	SDL_Texture* armeobackground = SDL_CreateTextureFromSurface(renderer, background);
 

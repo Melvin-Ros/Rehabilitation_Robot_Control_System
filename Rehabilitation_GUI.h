@@ -18,11 +18,11 @@ private:
 	bool quit = false;
 	int mousecoordinatex;
 	int mousecoordinatey;
-	int startplacementx = 400;
-	int quitplacementx = 660;
-	int buttonplacementy = 120;
-	int buttonw = 100;
-	int buttonh = 30;
+	int startplacementx = 50;
+	int quitplacementx = 200;
+	int buttonplacementy = 300;
+	int buttonw = 120;
+	int buttonh = 60;
 	bool continue_func = false;
 
 };
